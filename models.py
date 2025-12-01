@@ -146,16 +146,25 @@ def build_info_request_model(allowed_fields: list[str]):
 class Duration(BaseModel):
     type: Literal["time", "distance"]
     value: float
-    measurement_unit: Literal["minutes", "kms", "miles"]
+    measurement_unit: Literal["minutes", "km", "mile"]
+
+    def __str__(self):
+        return f"{self.value} {self.measurement_unit}"
 
 class Pace(BaseModel):
     mins_per_unit: str = Field(pattern=r'^\d{1,2}:\d{2}$')
-    measurement_unit: Literal["kms", "miles"]
+    measurement_unit: Literal["km", "mile"]
     range: float = Field(..., description="how narrow or large the band around the value should be in seconds. E.g. pace is 4:30 +- 10 seconds")
+
+    def __str__(self):
+        return f"{self.mins_per_unit} min/{self.measurement_unit} (+/- {self.range}s)"
 
 class Segment(BaseModel):
     duration: Duration
     pace: Pace
+
+    def __str__(self):
+        return f"Run for {self.duration} at {self.pace}"
 
 class Workout(BaseModel):
     day: Weekday
@@ -164,14 +173,33 @@ class Workout(BaseModel):
 class AdvancedWorkout(Workout):
     segments: list[Segment]
 
+    def __str__(self):
+        segments_str = "\n".join([f"  - {s}" for s in self.segments])
+        base = f"**{self.day}**:\n{segments_str}"
+        if self.notes:
+            base += f"\n  *Note: {self.notes}*"
+        return base
+
 class BeginnerWorkout(Workout):
     description: str
+
+    def __str__(self):
+        base = f"**{self.day}**: {self.description}"
+        if self.notes:
+            base += f"\n  *Note: {self.notes}*"
+        return base
 
 class BeginnerSchedule(BaseModel):
     workouts: list[BeginnerWorkout]
 
+    def __str__(self):
+        return "\n\n".join([str(w) for w in self.workouts])
+
 class AdvancedSchedule(BaseModel):
     workouts: list[AdvancedWorkout]
+
+    def __str__(self):
+        return "\n\n".join([str(w) for w in self.workouts])
 
 Schedule = BeginnerSchedule | AdvancedSchedule
 

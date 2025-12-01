@@ -17,4 +17,6 @@ def workout_planner(state: models.State):
     
     workout_gpt = utils.gpt.with_structured_output(output)
     response = workout_gpt.invoke(utils.with_system_prompt([], prompt))
+    print("Here's your schedule for the first week:")
+    print(str(response))
     return {"schedule": response}

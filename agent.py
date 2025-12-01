@@ -77,7 +77,6 @@ def build_graph():
 def main():
     agent = build_graph().compile()
     result = agent.invoke(models.State(messages=[]), {"recursion_limit": 100})
-    print(result)
 
 if __name__ == "__main__":
     main()
